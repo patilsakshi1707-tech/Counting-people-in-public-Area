@@ -1,14 +1,16 @@
-﻿# Counting-people-in-public-Area
-This project counts people in a public area using computer vision.
+# Counting People in Public Areas
 
-#Technologies Used
-Python
-OpenCV
-YOLO
-DeepSORT
+This project counts people in public areas using computer vision techniques.
 
-#How to Run
-Install requirements
-Run the main Python file
+## Technologies Used
+- Python
+- OpenCV
+- YOLO (You Only Look Once)
+- DeepSORT (Deep Simple Online and Realtime Tracking)
 
+## How to Run
+1. **Clone the repository**  
+   ```bash
+   git clone <repository-url>
+   cd <repository-folder>
 
