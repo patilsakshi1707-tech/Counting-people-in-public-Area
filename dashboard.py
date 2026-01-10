@@ -1,33 +1,66 @@
-# dashboard.py
 import streamlit as st
-import json
-import os
+import requests
 import time
 
-st.set_page_config("People Counter", layout="wide")
+st.set_page_config(page_title="Admin Panel", layout="wide")
 
-st.sidebar.title("Navigation")
-st.sidebar.radio("Select View", ["Viewer Panel"])
+# --------- LOGIN SYSTEM ----------
+if "logged_in" not in st.session_state:
+    st.session_state.logged_in = False
 
-st.title("👥 People Counter - Live View")
+def login_page():
+    st.title("🔐 Admin Login")
 
-if os.path.exists("live_data.json"):
-    with open("live_data.json") as f:
-        data = json.load(f)
+    username = st.text_input("Username")
+    password = st.text_input("Password", type="password")
+
+    if st.button("Login"):
+        # Demo credentials (change later)
+        if username == "admin" and password == "1234":
+            st.session_state.logged_in = True
+            st.success("✅ Login Successful")
+            st.rerun()
+        else:
+            st.error("❌ Invalid username or password")
+
+def dashboard_page():
+    st.title("👥 AI Crowd Counting System - Admin Dashboard")
+
+    if st.button("🚪 Logout"):
+        st.session_state.logged_in = False
+        st.rerun()
+
+    col1, col2, col3 = st.columns(3)
+
+    entered_box = col1.empty()
+    exited_box = col2.empty()
+    inside_box = col3.empty()
+
+    status = st.empty()
+
+    while True:
+        try:
+            r = requests.get("http://localhost:5005/api/live", timeout=2)
+            data = r.json()
+
+            entered = int(data.get("entered", 0))
+            exited = int(data.get("exited", 0))
+            inside = entered - exited
+
+            entered_box.metric("Total Entered", entered)
+            exited_box.metric("Total Exited", exited)
+            inside_box.metric("Currently Inside", inside)
+
+            status.success("✅ System Live")
+
+        except:
+            status.error("❌ Admin Server Not Running")
+
+        time.sleep(1)
+
+# --------- ROUTER ----------
+if st.session_state.logged_in:
+    dashboard_page()
 else:
-    data = {"entered": 0, "exited": 0, "current_inside": 0}
+    login_page()
 
-col1, col2, col3 = st.columns(3)
-col1.metric("Total Entered", data["entered"])
-col2.metric("Total Exited", data["exited"])
-col3.metric("Currently Inside", data["current_inside"])
-
-st.caption(f"Last updated: {data.get('last_updated', 'N/A')}")
-
-if data["current_inside"] >= 0:
-    st.success("System is Live - Count within limits")
-else:
-    st.error("⚠ Count anomaly detected")
-
-time.sleep(2)
-st.rerun()
